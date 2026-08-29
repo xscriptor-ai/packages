@@ -13,7 +13,7 @@ npm packages for installing Xscriptor AI agents and skills.
 npx @xscriptor/ai-agents
 ```
 
-Full registry: [xscriptor-ai/agents-hub](https://github.com/xscriptor-ai/agents-hub)
+Full registry: [xscriptor-ai/agents](https://github.com/xscriptor-ai/agents)
 
 ## License
 

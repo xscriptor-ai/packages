@@ -30,15 +30,15 @@ npx @xscriptor/skill-samurai --dry-run</code></pre>
 <h2>Resources</h2>
 
 <ul>
-  <li><a href="https://github.com/xscriptor/ai">github.com/xscriptor/ai</a></li>
+  <li><a href="https://github.com/xscriptor-ai/packages">github.com/xscriptor-ai/packages</a></li>
   <li><a href="https://dev.xscriptor.com/en/resources/ai/">dev.xscriptor.com/en/resources/ai/</a></li>
 </ul>
 
 <hr>
 
 <p><strong>License:</strong> <a href="./LICENSE">MIT</a><br>
-<strong>Report issues:</strong> <a href="https://github.com/xscriptor/ai/issues">github.com/xscriptor/ai/issues</a><br>
-<strong>Changelog:</strong> <a href="https://github.com/xscriptor/ai/releases">github.com/xscriptor/ai/releases</a></p>
+<strong>Report issues:</strong> <a href="https://github.com/xscriptor-ai/packages/issues">github.com/xscriptor-ai/packages/issues</a><br>
+<strong>Changelog:</strong> <a href="https://github.com/xscriptor-ai/packages/releases">github.com/xscriptor-ai/packages/releases</a></p>
 
 
 

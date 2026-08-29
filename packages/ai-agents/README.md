@@ -44,4 +44,4 @@ install-agents</code></pre>
 @incident-response investigate the alert
 @senior-fullstack design the architecture</code></pre>
 
-<p>Repo: <a href="https://github.com/xscriptor/ai">github.com/xscriptor/ai</a></p>
+<p>Repo: <a href="https://github.com/xscriptor-ai/packages">github.com/xscriptor-ai/packages</a></p>

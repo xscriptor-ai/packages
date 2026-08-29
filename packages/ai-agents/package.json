@@ -11,13 +11,13 @@
     "devops",
     "development"
   ],
-  "homepage": "https://github.com/xscriptor/ai",
-  "bugs": { "url": "https://github.com/xscriptor/ai/issues" },
+  "homepage": "https://github.com/xscriptor-ai/packages",
+  "bugs": { "url": "https://github.com/xscriptor-ai/packages/issues" },
   "license": "MIT",
   "author": "xscriptor (https://xscriptor.com)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xscriptor/ai.git"
+    "url": "git+https://github.com/xscriptor-ai/packages.git"
   },
   "bin": {
     "install-agents": "./bin/install-agents.js",
