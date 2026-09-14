@@ -1,25 +1,84 @@
 #!/usr/bin/env node
 // @xscriptor/skill-devx - Install the DevX development skill.
 // Usage: npx @xscriptor/skill-devx [--opencode|--anthropic|--dry-run]
-import { existsSync, mkdirSync, copyFileSync, readdirSync, statSync } from "fs";
+import {
+  existsSync, mkdirSync, copyFileSync, readdirSync, statSync,
+  writeFileSync, mkdtempSync, rmSync,
+} from "fs";
+import { execFileSync } from "child_process";
 import { join, dirname } from "path";
+import { tmpdir } from "os";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PKG_DIR = join(__dirname, "..");
-const REPO_DIR = join(PKG_DIR, "..", "..");
+const PACKAGES_ROOT = join(PKG_DIR, "..", "..");
+const WORKSPACE_ROOT = join(PACKAGES_ROOT, "..");
+const SKILL_NAME = "devx";
+const SKILL_REL = join("web", "dev", "devx", "devx");
+const REF = process.env.XSCRIPTOR_REF || "main";
 
 function dstPath(target) {
   const home = process.env.HOME || process.env.USERPROFILE || "";
-  if (target === "anthropic") return join(home, ".claude", "skills", "devx");
+  if (target === "anthropic") return join(home, ".claude", "skills", SKILL_NAME);
   const xdg = process.env.XDG_CONFIG_HOME || join(home, ".config");
-  return join(xdg, "opencode", "skills", "devx");
+  return join(xdg, "opencode", "skills", SKILL_NAME);
 }
 
-function srcPath() {
-  const p = join(PKG_DIR, "skills", "web", "dev", "devx");
-  const r = join(REPO_DIR, "skills", "web", "dev", "devx", "devx");
-  return existsSync(p) ? p : r;
+function bases() {
+  const list = [];
+  const srcIndex = process.argv.indexOf("--src");
+  if (srcIndex >= 0 && process.argv[srcIndex + 1]) list.push(process.argv[srcIndex + 1]);
+  if (process.env.XSCRIPTOR_SRC) list.push(process.env.XSCRIPTOR_SRC);
+  if (process.env.XSCRIPTOR_SKILLS_DIR) list.push(process.env.XSCRIPTOR_SKILLS_DIR);
+  if (process.env.XSCRIPTOR_AGENTS_DIR) list.push(process.env.XSCRIPTOR_AGENTS_DIR);
+  list.push(PACKAGES_ROOT, WORKSPACE_ROOT);
+  return list;
+}
+
+function localSource(target) {
+  if (target === "anthropic") {
+    const paths = [];
+    for (const base of bases()) {
+      paths.push(join(base, "claude", "skills", SKILL_NAME));
+      paths.push(join(base, "agents", "claude", "skills", SKILL_NAME));
+    }
+    return paths.find(p => existsSync(p));
+  }
+  const paths = [join(PKG_DIR, "skills", SKILL_REL)];
+  for (const base of bases()) {
+    paths.push(join(base, "skills", SKILL_REL));
+    paths.push(join(base, "skills", "skills", SKILL_REL));
+  }
+  return paths.find(p => existsSync(p));
+}
+
+async function fetchRepo(repo) {
+  const url = `https://codeload.github.com/xscriptor-ai/${repo}/tar.gz/refs/heads/${REF}`;
+  console.log(`  downloading xscriptor-ai/${repo}@${REF}`);
+  const res = await fetch(url, { redirect: "follow" });
+  if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
+  const dir = mkdtempSync(join(tmpdir(), "xscriptor-skill-"));
+  const tgz = join(dir, "src.tgz");
+  writeFileSync(tgz, Buffer.from(await res.arrayBuffer()));
+  try {
+    execFileSync("tar", ["-xzf", tgz, "-C", dir, "--strip-components=1"], { stdio: "ignore" });
+  } catch {
+    rmSync(dir, { recursive: true, force: true });
+    mkdirSync(dir, { recursive: true });
+    execFileSync("git", ["clone", "--depth", "1", "--branch", REF, `https://github.com/xscriptor-ai/${repo}.git`, dir], { stdio: "ignore" });
+  }
+  rmSync(tgz, { force: true });
+  return dir;
+}
+
+async function remoteSource(target) {
+  if (target === "anthropic") {
+    const dir = await fetchRepo("agents");
+    return join(dir, "claude", "skills", SKILL_NAME);
+  }
+  const dir = await fetchRepo("skills");
+  return join(dir, "skills", SKILL_REL);
 }
 
 function copyDir(s, d, dry) {
@@ -35,14 +94,19 @@ function copyDir(s, d, dry) {
   return c;
 }
 
-const args = process.argv.slice(2);
-const target = args.includes("--anthropic") ? "anthropic" : "opencode";
-const dryRun = args.includes("--dry-run");
-const src = srcPath();
-const dst = dstPath(target);
+async function main() {
+  const args = process.argv.slice(2);
+  const target = args.includes("--anthropic") ? "anthropic" : "opencode";
+  const dryRun = args.includes("--dry-run");
+  const dst = dstPath(target);
+  const src = localSource(target) || await remoteSource(target);
 
-if (!existsSync(src)) { console.error("Skill source not found"); process.exit(1); }
+  console.log(`==> @xscriptor/skill-devx -> ${dst}\n`);
+  const c = copyDir(src, dst, dryRun);
+  console.log(dryRun ? `\n==> Would install ${c} files` : `\n==> ${c} files installed`);
+}
 
-console.log(`==> @xscriptor/skill-devx -> ${dst}\n`);
-const c = copyDir(src, dst, dryRun);
-console.log(dryRun ? `\n==> Would install ${c} files` : `\n==> ${c} files installed`);
+main().catch(err => {
+  console.error(`error: ${err.message}`);
+  process.exit(1);
+});
