@@ -1,0 +1,17 @@
+{
+  "name": "@xscriptor/skill-xscriptor",
+  "version": "1.1.0",
+  "description": "Xscriptor portfolio skill for OpenCode and Claude Code. Full design and development documentation of xscriptor.com: architecture, design system, components, content pipeline, book readers and i18n.",
+  "keywords": ["opencode", "claude-code", "skill", "xscriptor", "design-system", "nextjs"],
+  "homepage": "https://github.com/xscriptor-ai/packages",
+  "bugs": { "url": "https://github.com/xscriptor-ai/packages/issues" },
+  "license": "MIT",
+  "author": "xscriptor (https://xscriptor.com)",
+  "repository": { "type": "git", "url": "git+https://github.com/xscriptor-ai/packages.git", "directory": "packages/skills/web-fullstack/portfolio/xscriptor" },
+  "bin": { "skill-xscriptor": "./bin/install.js" },
+  "type": "module",
+  "files": ["bin/", "LICENSE", "README.md"],
+  "engines": { "node": ">=18" },
+  "private": false,
+  "publishConfig": { "access": "public" }
+}

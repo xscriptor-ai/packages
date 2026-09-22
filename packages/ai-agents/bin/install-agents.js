@@ -28,6 +28,7 @@ Selection (default: --all):
   --skills            Skills only (project + senior)
   --commands          Commands only
   --groups LIST       Comma-separated groups (e.g. general,web/security)
+  --bundle            Use the skill-enabled agent set (agents/bundle) instead of the plain agents
 
 Target (default: --opencode):
   --opencode          Install to ~/.config/opencode/
@@ -44,6 +45,8 @@ Other:
 
 Examples:
   npx @xscriptor/ai-agents
+  npx @xscriptor/ai-agents --bundle
+  npx @xscriptor/ai-agents --agents --bundle
   npx @xscriptor/ai-agents --senior
   npx @xscriptor/ai-agents --skills
   npx @xscriptor/ai-agents --commands
@@ -73,9 +76,9 @@ const SENIOR_SKILLS = [
 ];
 
 const SKILL_ROUTES = [
-  { name: "xscriptor", src: "web/literature/xscriptor" },
-  { name: "devx", src: "web/dev/devx/devx" },
-  { name: "samurai", src: "web/cybersec/samurai" },
+  { name: "xscriptor", src: "web-fullstack/portfolio/xscriptor" },
+  { name: "devx", src: "web-fullstack/devtools/devx" },
+  { name: "samurai", src: "web-fullstack/platform/samurai" },
 ];
 
 const roots = {};
@@ -83,25 +86,46 @@ const roots = {};
 function rootsFrom(base) {
   if (!base || !existsSync(base)) return null;
   const found = {};
+
+  // agents repo (xscriptor-ai/agents): agents/ + senior/agents/ + claude/
   const agentsRepo = join(base, "agents");
-  if (existsSync(join(agentsRepo, "agents"))) {
+  if (existsSync(join(agentsRepo, "agents")) && existsSync(join(agentsRepo, "senior", "agents"))) {
     found.agents = join(agentsRepo, "agents");
     found.senior = join(agentsRepo, "senior", "agents");
-    found.claude = join(agentsRepo, "claude");
+    if (existsSync(join(agentsRepo, "claude"))) found.claude = join(agentsRepo, "claude");
+    if (existsSync(join(agentsRepo, "claude", "commands"))) found.commands = join(agentsRepo, "claude", "commands");
+    if (existsSync(join(agentsRepo, "bundle", "senior"))) {
+      found.bundleAgents = join(agentsRepo, "bundle");
+      found.bundleSenior = join(agentsRepo, "bundle", "senior");
+    }
   } else if (existsSync(join(base, "agents")) && existsSync(join(base, "senior", "agents"))) {
+    // base is the agents repo itself
     found.agents = join(base, "agents");
     found.senior = join(base, "senior", "agents");
+    if (existsSync(join(base, "claude"))) found.claude = join(base, "claude");
+    if (existsSync(join(base, "claude", "commands"))) found.commands = join(base, "claude", "commands");
+    if (existsSync(join(base, "bundle", "senior"))) {
+      found.bundleAgents = join(base, "bundle");
+      found.bundleSenior = join(base, "bundle", "senior");
+    }
   }
+
+  // skills repo (xscriptor-ai/skills): web-fullstack/ + senior/ (+ content/)
   const skillsRepo = join(base, "skills");
-  if (existsSync(join(skillsRepo, "skills")) && existsSync(join(skillsRepo, "senior", "skills"))) {
-    found.skills = join(skillsRepo, "skills");
-    found.seniorSkills = join(skillsRepo, "senior", "skills");
-    found.commands = join(skillsRepo, "commands");
-  } else if (existsSync(join(base, "senior", "skills"))) {
-    found.skills = join(base, "skills");
-    found.seniorSkills = join(base, "senior", "skills");
-    found.commands = join(base, "commands");
+  const looksLikeSkills = (p) =>
+    existsSync(join(p, "web-fullstack")) &&
+    (existsSync(join(p, "senior")) || existsSync(join(p, "content")));
+  if (looksLikeSkills(skillsRepo)) {
+    found.skills = skillsRepo;
+    found.seniorSkills = join(skillsRepo, "senior");
+    if (!found.commands && existsSync(join(skillsRepo, "commands"))) found.commands = join(skillsRepo, "commands");
+  } else if (looksLikeSkills(base)) {
+    // base is the skills repo itself
+    found.skills = base;
+    found.seniorSkills = join(base, "senior");
+    if (!found.commands && existsSync(join(base, "commands"))) found.commands = join(base, "commands");
   }
+
   return Object.keys(found).length ? found : null;
 }
 
@@ -142,19 +166,27 @@ async function fetchRepo(repo) {
 
 async function ensureAgents(needClaude = false) {
   const hasClaude = roots.claude && existsSync(roots.claude);
-  if (roots.agents && roots.senior && (!needClaude || hasClaude)) return;
+  const hasCommands = roots.commands && existsSync(roots.commands);
+  if (roots.agents && roots.senior && (!needClaude || hasClaude) && hasCommands) return;
   if (!agentsTmp) agentsTmp = await fetchRepo(AGENTS_REPO);
   roots.agents ||= join(agentsTmp, "agents");
   roots.senior ||= join(agentsTmp, "senior", "agents");
   if (needClaude && !hasClaude) roots.claude = join(agentsTmp, "claude");
+  // Commands now live in the agents repo mirror (claude/commands).
+  if (!hasCommands && existsSync(join(agentsTmp, "claude", "commands"))) roots.commands = join(agentsTmp, "claude", "commands");
+  // Skill-enabled agent set (agents/bundle): specialized + senior copies wired to skills.
+  if (existsSync(join(agentsTmp, "bundle", "senior"))) {
+    roots.bundleAgents ||= join(agentsTmp, "bundle");
+    roots.bundleSenior ||= join(agentsTmp, "bundle", "senior");
+  }
 }
 
 async function ensureSkills() {
-  if (roots.skills && roots.seniorSkills && roots.commands) return;
+  if (roots.skills && roots.seniorSkills) return;
   if (!skillsTmp) skillsTmp = await fetchRepo(SKILLS_REPO);
-  roots.skills ||= join(skillsTmp, "skills");
-  roots.seniorSkills ||= join(skillsTmp, "senior", "skills");
-  roots.commands ||= join(skillsTmp, "commands");
+  roots.skills ||= skillsTmp;
+  roots.seniorSkills ||= join(skillsTmp, "senior");
+  if (!roots.commands && existsSync(join(skillsTmp, "commands"))) roots.commands = join(skillsTmp, "commands");
 }
 
 function dstPath(target, sub) {
@@ -221,6 +253,7 @@ async function main() {
     : "opencode";
 
   const dryRun = args.includes("--dry-run");
+  const useBundle = args.includes("--bundle");
   const doAgents = mode === "all" || mode === "agents" || mode === "groups";
   const doSenior = mode === "all" || mode === "senior";
   const doSkills = mode === "all" || mode === "skills";
@@ -230,8 +263,19 @@ async function main() {
 
   discoverRoots();
   if (target === "anthropic") await ensureAgents(true);
-  if (doAgents || doSenior) await ensureAgents();
-  if (doSkills || doCommands) await ensureSkills();
+  if (doAgents || doSenior || doCommands) await ensureAgents();
+  if (doSkills) await ensureSkills();
+
+  if (useBundle && target !== "anthropic" && (doAgents || doSenior)) {
+    if (!roots.bundleAgents || !roots.bundleSenior) {
+      throw new Error("bundle sources not found (expected agents/bundle/ in the agents repo)");
+    }
+    roots.agents = roots.bundleAgents;
+    roots.senior = roots.bundleSenior;
+    console.log("  (using skill-enabled bundle: agents/bundle/)");
+  } else if (useBundle && target === "anthropic") {
+    console.log("  note: --bundle is OpenCode-only (Claude Code installs the claude/ mirror).");
+  }
 
   if (args.includes("--list")) {
     console.log("Available agent groups:");
@@ -368,16 +412,19 @@ async function main() {
   }
 
   if (doCommands) {
-    if (!roots.commands) throw new Error("commands sources not found");
-    console.log("  [Commands]");
-    const files = readdirSync(roots.commands).filter(f => f.endsWith(".md") && f !== "README.md");
-    for (const f of files) {
-      if (!dryRun) {
-        mkdirSync(commandsDst, { recursive: true });
-        copyFileSync(join(roots.commands, f), join(commandsDst, f));
+    if (!roots.commands || !existsSync(roots.commands)) {
+      console.log("  [Commands] none found (skipped)");
+    } else {
+      console.log("  [Commands]");
+      const files = readdirSync(roots.commands).filter(f => f.endsWith(".md") && f !== "README.md");
+      for (const f of files) {
+        if (!dryRun) {
+          mkdirSync(commandsDst, { recursive: true });
+          copyFileSync(join(roots.commands, f), join(commandsDst, f));
+        }
+        console.log(`    ${dryRun ? "-" : "+"} ${f}`);
+        total++;
       }
-      console.log(`    ${dryRun ? "-" : "+"} ${f}`);
-      total++;
     }
   }
 

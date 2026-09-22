@@ -1,7 +1,7 @@
 {
   "name": "@xscriptor/ai-agents",
-  "version": "1.0.0",
-  "description": "182 ready-to-use AI agents for OpenCode and Claude Code. Code review, security, documentation, testing, cloud, mobile, systems, and more.",
+  "version": "1.1.0",
+  "description": "205 ready-to-use AI agents + 21 skills + 8 commands for OpenCode and Claude Code. Specialized, senior, and skill-enabled agent sets for code review, security, documentation, testing, cloud, mobile, systems, and more.",
   "keywords": [
     "opencode",
     "claude-code",
@@ -17,7 +17,8 @@
   "author": "xscriptor (https://xscriptor.com)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xscriptor-ai/packages.git"
+    "url": "git+https://github.com/xscriptor-ai/packages.git",
+    "directory": "packages/ai-agents"
   },
   "bin": {
     "install-agents": "./bin/install-agents.js",
@@ -26,6 +27,7 @@
   "type": "module",
   "files": [
     "bin/",
+    "LICENSE",
     "README.md"
   ],
   "engines": { "node": ">=18" },
