@@ -79,6 +79,7 @@ const SKILL_ROUTES = [
   { name: "xscriptor", src: "web-fullstack/portfolio/xscriptor" },
   { name: "devx", src: "web-fullstack/devtools/devx" },
   { name: "samurai", src: "web-fullstack/platform/samurai" },
+  { name: "xglassmorphism", src: "web-fullstack/design/xglassmorphism" },
 ];
 
 const roots = {};
