@@ -13,7 +13,8 @@ packages/
     └── web-fullstack/
         ├── portfolio/xscriptor/                # @xscriptor/skill-xscriptor
         ├── devtools/devx/                      # @xscriptor/skill-devx
-        └── platform/samurai/                   # @xscriptor/skill-samurai
+        ├── platform/samurai/                   # @xscriptor/skill-samurai
+        └── design/xglassmorphism/              # @xscriptor/skill-xglassmorphism
 ```
 
 Each skill package ships only its installer (`bin/install.js`); the skill content
@@ -30,6 +31,7 @@ npx @xscriptor/ai-agents
 npx @xscriptor/skill-xscriptor
 npx @xscriptor/skill-devx
 npx @xscriptor/skill-samurai
+npx @xscriptor/skill-xglassmorphism
 ```
 
 ## Publishing
@@ -40,6 +42,7 @@ Publish each package from its own directory, e.g.:
 npm publish packages/skills/web-fullstack/portfolio/xscriptor
 npm publish packages/skills/web-fullstack/devtools/devx
 npm publish packages/skills/web-fullstack/platform/samurai
+npm publish packages/skills/web-fullstack/design/xglassmorphism
 ```
 
 Full registry: [xscriptor-ai/agents](https://github.com/xscriptor-ai/agents)
