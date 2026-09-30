@@ -1,0 +1,17 @@
+{
+  "name": "@xscriptor/skill-xglassmorphism",
+  "version": "1.1.0",
+  "description": "Real glassmorphism skill for OpenCode and Claude Code. Optics of frosted glass, backdrop-filter, layered surfaces, design tokens, typed components, accessibility, performance, fullstack architecture and Tauri packaging.",
+  "keywords": ["opencode", "claude-code", "skill", "xglassmorphism", "glassmorphism", "design-system", "tauri"],
+  "homepage": "https://github.com/xscriptor-ai/packages",
+  "bugs": { "url": "https://github.com/xscriptor-ai/packages/issues" },
+  "license": "MIT",
+  "author": "xscriptor (https://xscriptor.com)",
+  "repository": { "type": "git", "url": "git+https://github.com/xscriptor-ai/packages.git", "directory": "packages/skills/web-fullstack/design/xglassmorphism" },
+  "bin": { "skill-xglassmorphism": "./bin/install.js" },
+  "type": "module",
+  "files": ["bin/", "LICENSE", "README.md"],
+  "engines": { "node": ">=18" },
+  "private": false,
+  "publishConfig": { "access": "public" }
+}
