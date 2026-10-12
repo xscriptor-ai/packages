@@ -1,7 +1,7 @@
 {
   "name": "@xscriptor/ai-agents",
   "version": "1.1.0",
-  "description": "205 ready-to-use AI agents + 21 skills + 8 commands for OpenCode and Claude Code. Specialized, senior, and skill-enabled agent sets for code review, security, documentation, testing, cloud, mobile, systems, and more.",
+  "description": "205 ready-to-use AI agents + 22 skills + 8 commands for OpenCode and Claude Code. Specialized, senior, and skill-enabled agent sets for code review, security, documentation, testing, cloud, mobile, systems, and more.",
   "keywords": [
     "opencode",
     "claude-code",
